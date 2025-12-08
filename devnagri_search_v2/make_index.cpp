@@ -25,18 +25,23 @@ typedef struct doc_entry {
 }doc_entry;
 
 //structure for holding document_id and vector of positions in that document for a particular word
-typedef struct map_helper {
+/*typedef struct map_helper {
   u64 doc_id ;
   vector<u32> locations;
 }map_helper;
+*/
+struct helper {
+    std::vector<u64> doc_ids;                     // doc_ids[i]
+    std::vector<std::vector<u32>> positions;      // positions[i] = list of positions for doc_ids[i]
+};
 
 #include "print_word_map.cpp"
 void init_doc_entry(doc_entry *var_doc_entry);
 void add_docid_name_entry(u64 document_id,string *doc_name,doc_entry *var_doc_entry);
-void add_docs_map(u64 document_id,string *doc_name,unordered_map<string,vector<map_helper> > * word_map);
+void add_docs_map(u64 document_id,string *doc_name,unordered_map<std::string, helper>* word_map);
 vector<string> extract_words_from_file(const string &filename);
-void add_word_to_map(const string &word,u64 document_id,size_t location,unordered_map<string, vector<map_helper>> *word_map);
-void save_map(unordered_map<string,vector<map_helper> > * word_map);
+void add_word_to_map(const string &word,u64 document_id,size_t location,unordered_map<std::string, helper>* word_map);
+void save_map(unordered_map<std::string, helper>* word_map);
 //function for initlizing doc_entry structure
 //here files given as doc_id_start_point and doc_id_file_name are created or truncated (error handling is also done)
 void init_doc_entry(doc_entry *var_doc_entry)
@@ -74,26 +79,26 @@ void add_docid_name_entry(u64 document_id,string *doc_name,doc_entry *var_doc_en
   return ;
 }
 
-//function for adding word to map
-void add_word_to_map(const string &word,u64 document_id,size_t location,unordered_map<string, vector<map_helper>> *word_map)
+void add_word_to_map(const string &word,u64 document_id,size_t location,unordered_map<std::string, helper>* word_map)
 {
-    auto &vec = (*word_map)[word];
-    if ((vec.empty()) || (vec.back().doc_id != document_id))
+    helper &h = (*word_map)[word];
+
+    // If this word has no entries or the last doc_id is different, add a new entry
+    if (h.doc_ids.empty() || h.doc_ids.back() != document_id)
     {
-        map_helper h;
-        h.doc_id = document_id;
-        cout << "doc_id = " << h.doc_id << "\n" << endl;
-        h.locations.push_back(location);
-        vec.push_back(h);
+        h.doc_ids.push_back(document_id);
+        h.positions.emplace_back();      // create an empty vector for this document
+        h.positions.back().push_back(location);
     }
     else
     {
-        vec.back().locations.push_back(location);
+        // Same document → append position to last positions list
+        h.positions.back().push_back(location);
     }
 }
 
 //function of adding individual document to in-memory map 
-void add_docs_map(u64 document_id,string *doc_name, unordered_map<string,vector<map_helper> > * word_map)
+void add_docs_map(u64 document_id,string *doc_name,unordered_map<std::string, helper>* word_map)
 {
   vector<string> words = extract_words_from_file(*doc_name);
   size_t i = 0;
@@ -182,7 +187,7 @@ vector<string> extract_words_from_file(const string &filename)
   return result;
 }
 
-void save_map(unordered_map<string,vector<map_helper> > * word_map)
+void save_map(unordered_map<std::string, helper>* word_map)
 {
   return;
 }
@@ -194,7 +199,7 @@ int main()
   init_doc_entry(&var_doc_entry);// initlizes the doc entry file pointers
   fs::directory_iterator it(folder);
   fs::directory_iterator end;  // required for termination after reading all files 
-  unordered_map<string,vector<map_helper> > word_map;
+  std::unordered_map<std::string, helper> word_map;
   while (it != end) 
   {
     const fs::directory_entry &entry = *it;
@@ -217,3 +222,4 @@ int main()
   print_word_map(word_map);
   return 0;
 }
+

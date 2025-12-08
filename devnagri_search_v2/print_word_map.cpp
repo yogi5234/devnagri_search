@@ -1,33 +1,25 @@
-void print_word_map(const unordered_map<string, vector<map_helper>> &word_map)
+void print_word_map(const std::unordered_map<std::string, helper> &word_map)
 {
-  unordered_map<string, vector<map_helper>>::const_iterator it = word_map.begin();
-  unordered_map<string, vector<map_helper>>::const_iterator end = word_map.end();
-  while (it != end)
-  {
-    const string &word = it->first;
-    const vector<map_helper> &doc_list = it->second;
-    cout << "Word: " << word << "\n";
-    size_t di = 0;
-    size_t dsz = doc_list.size();
-    while (di != dsz)
+    for (const auto &p : word_map)
     {
-      const map_helper &h = doc_list[di];
-      cout << "  DocID: " << h.doc_id << " Locations: ";
-      size_t li = 0;
-      size_t lsz = h.locations.size();
-      while (li != lsz)
-      {
-        cout << h.locations[li];
-        if (li + 1 != lsz)
+        const std::string &word = p.first;
+        const helper &h = p.second;
+
+        std::cout << "Word: " << word << "\n";
+
+        size_t count = h.doc_ids.size();
+        for (size_t i = 0; i < count; i++)
         {
-          cout << ", ";
+            std::cout << "  DocID: " << h.doc_ids[i] << " Locations: ";
+
+            const auto &locs = h.positions[i];
+            for (size_t j = 0; j < locs.size(); j++)
+            {
+                std::cout << locs[j];
+                if (j + 1 != locs.size())
+                    std::cout << ", ";
+            }
+            std::cout << "\n";
         }
-        li += 1;
-      }
-      cout << "\n";
-      di += 1;
     }
-    it++;
-  }
-  return;
 }
