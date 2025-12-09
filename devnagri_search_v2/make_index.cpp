@@ -236,7 +236,8 @@ void save_map(unordered_map<string, helper>* word_map)
     while(docs_preprocessed != total_docs)
     {
       next_batch = min(((total_doc_size) - (doc_visited)),((save_map_positions_buffer_size)-(buffer_filled)));
-      //copy nextbatch
+      //copy next batch
+      memcpy((doc_locations_buffer + buffer_filled),(h.positions[docs_preprocessed].data() + doc_visited),next_batch);
       doc_visited += next_batch;
       buffer_filled += next_batch;
       if(buffer_filled == save_map_positions_buffer_size)
