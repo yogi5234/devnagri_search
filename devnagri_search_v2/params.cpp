@@ -1,3 +1,5 @@
+#define doc_id_size 8 // in bytes
+#define doc_vector_max_len_bytes 4 // in bytes
 #define BUFFER_SIZE 4096
 #define folder "/home/yogiraj/Desktop/SemIII/devnagri_search/devnagri_search_v2/"
 #define ds_folder "/home/yogiraj/Desktop/SemIII/devnagri_search/devnagri_search_v2/ds_folder/"
@@ -10,3 +12,10 @@
 
 //typedefs used by extract_words_from_file
 #define extract_words_from_file_buffer_size 4096
+
+//typedefs used by save map
+// buffer size used will be save_map_locations_buffer_struct_size * save_map_locations_buffer_members
+#define save_map_locations_buffer_members 256
+#define save_map_locations_buffer_struct_size 12 // in bytes
+#define save_map_locations_buffer_size (save_map_locations_buffer_struct_size * save_map_locations_buffer_members)
+#define save_map_locations_ids_folder "ids_folder/"

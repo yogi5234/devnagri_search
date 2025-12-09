@@ -30,18 +30,19 @@ typedef struct doc_entry {
   vector<u32> locations;
 }map_helper;
 */
+//structure for holding document_id and vector of positions in that document for a particular word
 struct helper {
-    std::vector<u64> doc_ids;                     // doc_ids[i]
-    std::vector<std::vector<u32>> positions;      // positions[i] = list of positions for doc_ids[i]
+    vector<u64> doc_ids;                     // doc_ids[i]
+    vector<vector<u32>> positions;      // positions[i] = list of positions for doc_ids[i]
 };
 
 #include "print_word_map.cpp"
 void init_doc_entry(doc_entry *var_doc_entry);
 void add_docid_name_entry(u64 document_id,string *doc_name,doc_entry *var_doc_entry);
-void add_docs_map(u64 document_id,string *doc_name,unordered_map<std::string, helper>* word_map);
+void add_docs_map(u64 document_id,string *doc_name,unordered_map<string, helper>* word_map);
 vector<string> extract_words_from_file(const string &filename);
-void add_word_to_map(const string &word,u64 document_id,size_t location,unordered_map<std::string, helper>* word_map);
-void save_map(unordered_map<std::string, helper>* word_map);
+void add_word_to_map(const string &word,u64 document_id,size_t location,unordered_map<string, helper>* word_map);
+void save_map(unordered_map<string, helper>* word_map);
 //function for initlizing doc_entry structure
 //here files given as doc_id_start_point and doc_id_file_name are created or truncated (error handling is also done)
 void init_doc_entry(doc_entry *var_doc_entry)
@@ -79,7 +80,7 @@ void add_docid_name_entry(u64 document_id,string *doc_name,doc_entry *var_doc_en
   return ;
 }
 
-void add_word_to_map(const string &word,u64 document_id,size_t location,unordered_map<std::string, helper>* word_map)
+void add_word_to_map(const string &word,u64 document_id,size_t location,unordered_map<string, helper>* word_map)
 {
     helper &h = (*word_map)[word];
 
@@ -98,7 +99,7 @@ void add_word_to_map(const string &word,u64 document_id,size_t location,unordere
 }
 
 //function of adding individual document to in-memory map 
-void add_docs_map(u64 document_id,string *doc_name,unordered_map<std::string, helper>* word_map)
+void add_docs_map(u64 document_id,string *doc_name,unordered_map<string, helper>* word_map)
 {
   vector<string> words = extract_words_from_file(*doc_name);
   size_t i = 0;
@@ -187,8 +188,45 @@ vector<string> extract_words_from_file(const string &filename)
   return result;
 }
 
-void save_map(unordered_map<std::string, helper>* word_map)
+void save_map(unordered_map<string, helper>* word_map)
 {
+  unordered_map <string,helper>::iterator it = word_map->begin();
+  while(it != word_map->end())
+  {
+    string word = it->first;
+    string word_doc_id_file_name = string(save_map_locations_ids_folder) + word + "_ids";
+    FILE *fp = fopen(word_doc_id_file_name.c_str(),"a");
+    if (fp == NULL)
+    {
+      cerr << "Failed to open file: " << word_doc_id_file_name << "\n";
+      return ;
+    }
+    helper &h = it->second;
+    //cout << "word : " << it->first << "\ttotal docs : " << h.doc_ids.size() <<"\n" << endl;
+    u64 docs_preprocessed = 0;
+    u64 total_docs = h.doc_ids.size();
+    u8 locations_buffer[save_map_locations_buffer_size];
+    u32 loc_in_buffer = 0 ;
+    u32 temp_vector_len;
+    while(docs_preprocessed != total_docs)
+    {
+      //copy
+      memcpy((locations_buffer + (save_map_locations_buffer_struct_size * docs_preprocessed)),&h.doc_ids[docs_preprocessed],doc_id_size); // copying doc_id;
+      temp_vector_len = h.positions[docs_preprocessed].size();
+      memcpy((locations_buffer + (save_map_locations_buffer_struct_size * docs_preprocessed)+ doc_id_size),&temp_vector_len,doc_vector_max_len_bytes); // copying number of elements;
+      //copy
+      loc_in_buffer += 1;
+      docs_preprocessed += 1;
+      if(loc_in_buffer == save_map_locations_buffer_members)
+      {
+        fwrite(locations_buffer,(save_map_locations_buffer_struct_size * loc_in_buffer),1,fp);
+        loc_in_buffer = 0;
+        loc_in_buffer = 0;
+      }
+    }
+        fwrite(locations_buffer,(save_map_locations_buffer_struct_size * loc_in_buffer),1,fp);
+    ++it;
+  }
   return;
 }
 int main() 
@@ -199,7 +237,7 @@ int main()
   init_doc_entry(&var_doc_entry);// initlizes the doc entry file pointers
   fs::directory_iterator it(folder);
   fs::directory_iterator end;  // required for termination after reading all files 
-  std::unordered_map<std::string, helper> word_map;
+  unordered_map<string, helper> word_map;
   while (it != end) 
   {
     const fs::directory_entry &entry = *it;
