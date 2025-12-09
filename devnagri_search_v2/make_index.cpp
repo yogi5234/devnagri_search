@@ -16,7 +16,7 @@
 #include "my_typedefs.h"
 
 using namespace std;
-namespace fs = std::filesystem;
+namespace fs = filesystem;
 
 // structure required for adding doc_id:doc_name entry
 typedef struct doc_entry {
@@ -24,12 +24,6 @@ typedef struct doc_entry {
   FILE *fp_doc_id_file_name;
 }doc_entry;
 
-//structure for holding document_id and vector of positions in that document for a particular word
-/*typedef struct map_helper {
-  u64 doc_id ;
-  vector<u32> locations;
-}map_helper;
-*/
 //structure for holding document_id and vector of positions in that document for a particular word
 struct helper {
     vector<u64> doc_ids;                     // doc_ids[i]
@@ -82,20 +76,19 @@ void add_docid_name_entry(u64 document_id,string *doc_name,doc_entry *var_doc_en
 
 void add_word_to_map(const string &word,u64 document_id,size_t location,unordered_map<string, helper>* word_map)
 {
-    helper &h = (*word_map)[word];
-
-    // If this word has no entries or the last doc_id is different, add a new entry
-    if (h.doc_ids.empty() || h.doc_ids.back() != document_id)
-    {
-        h.doc_ids.push_back(document_id);
-        h.positions.emplace_back();      // create an empty vector for this document
-        h.positions.back().push_back(location);
-    }
-    else
-    {
-        // Same document → append position to last positions list
-        h.positions.back().push_back(location);
-    }
+  helper &h = (*word_map)[word];
+  // If this word has no entries or the last doc_id is different, add a new entry
+  if (h.doc_ids.empty() || h.doc_ids.back() != document_id)
+  {
+    h.doc_ids.push_back(document_id);
+    h.positions.emplace_back();      // create an empty vector for this document
+    h.positions.back().push_back(location);
+  }
+  else
+  {
+    // Same document : append position to last positions list
+    h.positions.back().push_back(location);
+  }
 }
 
 //function of adding individual document to in-memory map 
@@ -106,8 +99,8 @@ void add_docs_map(u64 document_id,string *doc_name,unordered_map<string, helper>
   size_t sz = words.size();
   while (i != sz)
   {
-      add_word_to_map(words[i], document_id, i, word_map);
-      i += 1;
+    add_word_to_map(words[i], document_id, i, word_map);
+    i += 1;
   }
   return ;
 }
@@ -208,28 +201,64 @@ void save_map(unordered_map<string, helper>* word_map)
     u8 locations_buffer[save_map_locations_buffer_size];
     u32 loc_in_buffer = 0 ;
     u32 temp_vector_len;
+    // this while block takes care of saving document_id : no of occurances
     while(docs_preprocessed != total_docs)
     {
-      //copy
       memcpy((locations_buffer + (save_map_locations_buffer_struct_size * docs_preprocessed)),&h.doc_ids[docs_preprocessed],doc_id_size); // copying doc_id;
       temp_vector_len = h.positions[docs_preprocessed].size();
       memcpy((locations_buffer + (save_map_locations_buffer_struct_size * docs_preprocessed)+ doc_id_size),&temp_vector_len,doc_vector_max_len_bytes); // copying number of elements;
-      //copy
       loc_in_buffer += 1;
       docs_preprocessed += 1;
-      if(loc_in_buffer == save_map_locations_buffer_members)
+      if((loc_in_buffer == save_map_locations_buffer_members) || (docs_preprocessed == total_docs))
       {
         fwrite(locations_buffer,(save_map_locations_buffer_struct_size * loc_in_buffer),1,fp);
         loc_in_buffer = 0;
-        loc_in_buffer = 0;
       }
     }
-        fwrite(locations_buffer,(save_map_locations_buffer_struct_size * loc_in_buffer),1,fp);
+    fclose(fp);
+    //string word = it->first;
+    string word_doc_locations_file_name = string(save_map_locations_positions_folder) + word + "_positions";
+    FILE *fp_1 = fopen(word_doc_locations_file_name.c_str(),"a");
+    if (fp_1 == NULL)
+    {
+      cerr << "Failed to open file: " << word_doc_locations_file_name << "\n";
+      return ;
+    }
+    
+    u32 doc_locations_buffer[save_map_positions_buffer_size];
+    u32 doc_visited = 0;
+    u32 total_doc_size = h.positions[0].size();
+    u32 buffer_filled = 0;
+    docs_preprocessed = 0;
+    total_docs = h.doc_ids.size();
+    u32 next_batch;
+    #define min(x,y) ((x) < (y)  ? (x): (y))
+    while(docs_preprocessed != total_docs)
+    {
+      next_batch = min(((total_doc_size) - (doc_visited)),((save_map_positions_buffer_size)-(buffer_filled)));
+      //copy nextbatch
+      doc_visited += next_batch;
+      buffer_filled += next_batch;
+      if(buffer_filled == save_map_positions_buffer_size)
+      {
+        //write
+        buffer_filled = 0;
+      }
+      if(doc_visited == total_doc_size)
+      {
+        doc_visited = 0;
+        docs_preprocessed += 1;
+        if(docs_preprocessed != total_docs)
+        {
+          total_doc_size = h.positions[docs_preprocessed].size();
+        }
+      }
+    }
     ++it;
   }
   return;
 }
-int main() 
+int main()
 {
   int docs_read = 0 ;
   char buffer[BUFFER_SIZE];

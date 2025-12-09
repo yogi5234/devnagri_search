@@ -19,3 +19,5 @@
 #define save_map_locations_buffer_struct_size 12 // in bytes
 #define save_map_locations_buffer_size (save_map_locations_buffer_struct_size * save_map_locations_buffer_members)
 #define save_map_locations_ids_folder "ids_folder/"
+#define save_map_locations_positions_folder "positions_folder/"
+#define save_map_positions_buffer_size 1024 // 4* this memory will be used
