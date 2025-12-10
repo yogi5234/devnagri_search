@@ -12,8 +12,12 @@
 #include <unordered_map>
 #include <map>
 
-#include "params.cpp" // use this file for giving all parameters
-#include "my_typedefs.h"
+#define header_folder "header_folder/"
+#define params_file header_folder "parmas.h"
+#define my_typedefs header_folder "my_typedefs.h" 
+#define print_word_map_file header_folder "print_word_map.h"
+#include "header_folder/my_typedefs.h"
+#include "header_folder/params.h" // use this file for giving all parameters
 
 using namespace std;
 namespace fs = filesystem;
@@ -30,7 +34,7 @@ struct helper {
     vector<vector<u32>> positions;      // positions[i] = list of positions for doc_ids[i]
 };
 
-#include "print_word_map.cpp"
+#include "header_folder/print_word_map.h"
 void init_doc_entry(doc_entry *var_doc_entry);
 void add_docid_name_entry(u64 document_id,string *doc_name,doc_entry *var_doc_entry);
 void add_docs_map(u64 document_id,string *doc_name,unordered_map<string, helper>* word_map);
@@ -69,7 +73,7 @@ void add_docid_name_entry(u64 document_id,string *doc_name,doc_entry *var_doc_en
   }
   data_to_add[1] = (u64)fp_doc_id_file_name_len;
   fwrite(data_to_add,8,2,var_doc_entry->fp_doc_id_start_point); // adding doc_id start pos entry
-  cout << "File name : " << *doc_name << endl;
+  //cout << "File name : " << *doc_name << endl;
   fwrite(doc_name->c_str(),doc_name->length(),1,var_doc_entry->fp_doc_id_file_name);//writing file name
   return ;
 }
@@ -109,10 +113,12 @@ void add_docs_map(u64 document_id,string *doc_name,unordered_map<string, helper>
 vector<string> extract_words_from_file(const string &filename)
 {
   vector<string> result;
-  FILE *fp = fopen(filename.c_str(), "r");
+  string act_filename = string(txt_folder) + filename;
+  FILE *fp = fopen(act_filename.c_str(), "r");
   if (fp == NULL)
   {
     cerr << "Failed to open file: " << filename << "\n";
+    cerr << "errno = " << errno << endl;
     return result;
   }
   char buffer[extract_words_from_file_buffer_size];
@@ -237,14 +243,9 @@ void save_map(unordered_map<string, helper>* word_map)
     {
       next_batch = min(((total_doc_size) - (doc_visited)),((save_map_positions_buffer_size)-(buffer_filled)));
       //copy next batch
-      memcpy((doc_locations_buffer + buffer_filled),(h.positions[docs_preprocessed].data() + doc_visited),next_batch);
+      memcpy((doc_locations_buffer + buffer_filled),(h.positions[docs_preprocessed].data() + doc_visited),next_batch * (doc_vector_max_len_bytes));
       doc_visited += next_batch;
       buffer_filled += next_batch;
-      if(buffer_filled == save_map_positions_buffer_size)
-      {
-        //write
-        buffer_filled = 0;
-      }
       if(doc_visited == total_doc_size)
       {
         doc_visited = 0;
@@ -253,6 +254,12 @@ void save_map(unordered_map<string, helper>* word_map)
         {
           total_doc_size = h.positions[docs_preprocessed].size();
         }
+      }
+      if((buffer_filled == save_map_positions_buffer_size) || (docs_preprocessed == total_docs))
+      {
+        fwrite(doc_locations_buffer,doc_vector_max_len_bytes,buffer_filled,fp_1);
+        cout << "write : " << word << "\n" << endl;
+        buffer_filled = 0;
       }
     }
     ++it;
@@ -265,7 +272,7 @@ int main()
   char buffer[BUFFER_SIZE];
   doc_entry var_doc_entry;
   init_doc_entry(&var_doc_entry);// initlizes the doc entry file pointers
-  fs::directory_iterator it(folder);
+  fs::directory_iterator it(txt_folder);
   fs::directory_iterator end;  // required for termination after reading all files 
   unordered_map<string, helper> word_map;
   while (it != end) 

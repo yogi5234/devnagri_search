@@ -3,6 +3,7 @@
 #define BUFFER_SIZE 4096
 #define folder "/home/yogiraj/Desktop/SemIII/devnagri_search/devnagri_search_v2/"
 #define ds_folder "/home/yogiraj/Desktop/SemIII/devnagri_search/devnagri_search_v2/ds_folder/"
+#define txt_folder "/home/yogiraj/Desktop/SemIII/devnagri_search/devnagri_search_v2/txt_folder/"
 #define doc_id_start_point "/home/yogiraj/Desktop/SemIII/devnagri_search/devnagri_search_v2/ds_folder/doc_id_start_point"
 #define doc_id_file_name "/home/yogiraj/Desktop/SemIII/devnagri_search/devnagri_search_v2/ds_folder/doc_id_file_name"
 #define max_docs_in_mem 200 //think and reason about it

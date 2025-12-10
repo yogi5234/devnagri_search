@@ -1,6 +1,9 @@
 CC = g++
 
-run: make_index.cpp
+run: compile
+	./make_index
+
+compile: make_index.cpp
 	$(CC) make_index.cpp -o make_index `pkg-config --cflags --libs icu-uc icu-i18n`
 
 clean:
