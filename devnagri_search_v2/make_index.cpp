@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <filesystem>
 #include <cstdio>
 #include <string>
@@ -22,6 +23,15 @@
 using namespace std;
 namespace fs = filesystem;
 
+ofstream log_file(log_file_name,ios::app);
+
+void log_msg(const string &msg)
+{
+  log_file << msg << "\n" ;
+  log_file.flush();
+  return;
+}
+
 // structure required for adding doc_id:doc_name entry
 typedef struct doc_entry {
   FILE *fp_doc_id_start_point;
@@ -30,8 +40,8 @@ typedef struct doc_entry {
 
 //structure for holding document_id and vector of positions in that document for a particular word
 struct helper {
-    vector<u64> doc_ids;                     // doc_ids[i]
-    vector<vector<u32>> positions;      // positions[i] = list of positions for doc_ids[i]
+  vector<u64> doc_ids;                     // doc_ids[i]
+  vector<vector<u32>> positions;      // positions[i] = list of positions for doc_ids[i]
 };
 
 #include "header_folder/print_word_map.h"
@@ -73,8 +83,10 @@ void add_docid_name_entry(u64 document_id,string *doc_name,doc_entry *var_doc_en
   }
   data_to_add[1] = (u64)fp_doc_id_file_name_len;
   fwrite(data_to_add,8,2,var_doc_entry->fp_doc_id_start_point); // adding doc_id start pos entry
+  fflush(var_doc_entry->fp_doc_id_start_point);                                                               
   //cout << "File name : " << *doc_name << endl;
   fwrite(doc_name->c_str(),doc_name->length(),1,var_doc_entry->fp_doc_id_file_name);//writing file name
+  fflush(var_doc_entry->fp_doc_id_file_name);                                                               
   return ;
 }
 
@@ -201,7 +213,6 @@ void save_map(unordered_map<string, helper>* word_map)
       return ;
     }
     helper &h = it->second;
-    //cout << "word : " << it->first << "\ttotal docs : " << h.doc_ids.size() <<"\n" << endl;
     u64 docs_preprocessed = 0;
     u64 total_docs = h.doc_ids.size();
     u8 locations_buffer[save_map_locations_buffer_size];
@@ -214,13 +225,16 @@ void save_map(unordered_map<string, helper>* word_map)
       temp_vector_len = h.positions[docs_preprocessed].size();
       memcpy((locations_buffer + (save_map_locations_buffer_struct_size * docs_preprocessed)+ doc_id_size),&temp_vector_len,doc_vector_max_len_bytes); // copying number of elements;
       loc_in_buffer += 1;
+      //log_msg("ids saved " + to_string(docs_preprocessed));
       docs_preprocessed += 1;
       if((loc_in_buffer == save_map_locations_buffer_members) || (docs_preprocessed == total_docs))
       {
         fwrite(locations_buffer,(save_map_locations_buffer_struct_size * loc_in_buffer),1,fp);
+        fflush(fp);
         loc_in_buffer = 0;
       }
     }
+
     fclose(fp);
     //string word = it->first;
     string word_doc_locations_file_name = string(save_map_locations_positions_folder) + word + "_positions";
@@ -230,7 +244,7 @@ void save_map(unordered_map<string, helper>* word_map)
       cerr << "Failed to open file: " << word_doc_locations_file_name << "\n";
       return ;
     }
-    
+
     u32 doc_locations_buffer[save_map_positions_buffer_size];
     u32 doc_visited = 0;
     u32 total_doc_size = h.positions[0].size();
@@ -238,7 +252,7 @@ void save_map(unordered_map<string, helper>* word_map)
     docs_preprocessed = 0;
     total_docs = h.doc_ids.size();
     u32 next_batch;
-    #define min(x,y) ((x) < (y)  ? (x): (y))
+#define min(x,y) ((x) < (y)  ? (x): (y))
     while(docs_preprocessed != total_docs)
     {
       next_batch = min(((total_doc_size) - (doc_visited)),((save_map_positions_buffer_size)-(buffer_filled)));
@@ -249,6 +263,7 @@ void save_map(unordered_map<string, helper>* word_map)
       if(doc_visited == total_doc_size)
       {
         doc_visited = 0;
+        //log_msg("mem saved" + to_string(docs_preprocessed));
         docs_preprocessed += 1;
         if(docs_preprocessed != total_docs)
         {
@@ -258,10 +273,12 @@ void save_map(unordered_map<string, helper>* word_map)
       if((buffer_filled == save_map_positions_buffer_size) || (docs_preprocessed == total_docs))
       {
         fwrite(doc_locations_buffer,doc_vector_max_len_bytes,buffer_filled,fp_1);
-        cout << "write : " << word << "\n" << endl;
+        fflush(fp_1);
+        //cout << "write : " << word << "\n" << endl;
         buffer_filled = 0;
       }
     }
+    fclose(fp_1); 
     ++it;
   }
   return;
@@ -287,14 +304,20 @@ int main()
       add_docs_map(docs_read,&filename,&word_map);
       docs_read += 1;
     }
+    log_msg("doc " + to_string(docs_read) + " done");
     it++;  
-    if((docs_read % max_docs_in_mem) == 0)
+    if(((docs_read % max_docs_in_mem) == 0) || (it == end))
     {
       save_map(&word_map);
+      word_map.clear();
+      log_msg("docs saved " + to_string(docs_read));
     }
   }
-  save_map(&word_map);
-  print_word_map(word_map);
+  //print_word_map(word_map);
+
+  fclose(var_doc_entry.fp_doc_id_start_point);
+  fclose(var_doc_entry.fp_doc_id_file_name);
+
   return 0;
 }
 

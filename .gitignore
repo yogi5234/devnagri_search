@@ -1,6 +1,7 @@
 devnagri_search_v2/ds_folder/*
 devnagri_search_v2/ids_folder/*
 devnagri_search_v2/positions_folder/*
+devnagri_search_v2/logs_folder/*
 devnagri_search_v2/*.out
 devnagri_search_v2/*.swp
 devnagri_search_v2/*.txt
