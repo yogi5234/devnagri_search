@@ -28,7 +28,9 @@
         - structure (12 bytes)
         - {
         -   unsigned long long int doc_id ; // document id
-        -   unsigned long long int no_occured ; // no of times word has occured in that document
+        -   unsigned long long int list_pos_start ; // position from which list of this document starts 
+                                                    // mult position by 4 to get byte no 
+                                                    // to get total number of elements subtract list_pos_start of current document from next one
         - }
   
       - positions_folder : for each word contains a file named word + "_positions" which holds list of positions on which that word has occured this [positions] can be divided into [[positions]] based on info from word + "_ids" file from ids_folder/

@@ -8,6 +8,7 @@
 #include <unicode/unistr.h>
 #include <unicode/brkiter.h>
 #include <unicode/uchar.h>
+#include <sys/stat.h>
 
 #include <vector>
 #include <unordered_map>
@@ -207,6 +208,13 @@ void save_map(unordered_map<string, helper>* word_map)
     string word = it->first;
     string word_doc_id_file_name = string(save_map_locations_ids_folder) + word + "_ids";
     FILE *fp = fopen(word_doc_id_file_name.c_str(),"a");
+    struct stat help_start_pos;
+    if(fstat(fileno(fp),&help_start_pos) != 0)
+    {
+      cerr << "can't get file len: " << word_doc_id_file_name << "\n";
+      return ;
+    }
+    u32 start_pos = help_start_pos.st_size;
     if (fp == NULL)
     {
       cerr << "Failed to open file: " << word_doc_id_file_name << "\n";
@@ -217,13 +225,14 @@ void save_map(unordered_map<string, helper>* word_map)
     u64 total_docs = h.doc_ids.size();
     u8 locations_buffer[save_map_locations_buffer_size];
     u32 loc_in_buffer = 0 ;
-    u32 temp_vector_len;
+    //u32 temp_vector_len;
     // this while block takes care of saving document_id : no of occurances
     while(docs_preprocessed != total_docs)
     {
       memcpy((locations_buffer + (save_map_locations_buffer_struct_size * docs_preprocessed)),&h.doc_ids[docs_preprocessed],doc_id_size); // copying doc_id;
-      temp_vector_len = h.positions[docs_preprocessed].size();
-      memcpy((locations_buffer + (save_map_locations_buffer_struct_size * docs_preprocessed)+ doc_id_size),&temp_vector_len,doc_vector_max_len_bytes); // copying number of elements;
+      memcpy((locations_buffer + (save_map_locations_buffer_struct_size * docs_preprocessed)+ doc_id_size),&start_pos,doc_vector_max_len_bytes); // copying number of elements;
+      //temp_vector_len = h.positions[docs_preprocessed].size();
+      start_pos += h.positions[docs_preprocessed].size();
       loc_in_buffer += 1;
       //log_msg("ids saved " + to_string(docs_preprocessed));
       docs_preprocessed += 1;
