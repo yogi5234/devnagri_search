@@ -208,18 +208,25 @@ void save_map(unordered_map<string, helper>* word_map)
     string word = it->first;
     string word_doc_id_file_name = string(save_map_locations_ids_folder) + word + "_ids";
     FILE *fp = fopen(word_doc_id_file_name.c_str(),"a");
-    struct stat help_start_pos;
-    if(fstat(fileno(fp),&help_start_pos) != 0)
-    {
-      cerr << "can't get file len: " << word_doc_id_file_name << "\n";
-      return ;
-    }
-    u32 start_pos = help_start_pos.st_size;
     if (fp == NULL)
     {
       cerr << "Failed to open file: " << word_doc_id_file_name << "\n";
       return ;
     }
+    string word_doc_locations_file_name = string(save_map_locations_positions_folder) + word + "_positions";
+    FILE *fp_1 = fopen(word_doc_locations_file_name.c_str(),"a");
+    if (fp_1 == NULL)
+    {
+      cerr << "Failed to open file: " << word_doc_locations_file_name << "\n";
+      return ;
+    }
+    struct stat help_start_pos;
+    if(fstat(fileno(fp_1),&help_start_pos) != 0)
+    {
+      cerr << "can't get file len: " << word_doc_id_file_name << "\n";
+      return ;
+    }
+    u32 start_pos = (help_start_pos.st_size) / 4;
     helper &h = it->second;
     u64 docs_preprocessed = 0;
     u64 total_docs = h.doc_ids.size();
@@ -246,13 +253,6 @@ void save_map(unordered_map<string, helper>* word_map)
 
     fclose(fp);
     //string word = it->first;
-    string word_doc_locations_file_name = string(save_map_locations_positions_folder) + word + "_positions";
-    FILE *fp_1 = fopen(word_doc_locations_file_name.c_str(),"a");
-    if (fp_1 == NULL)
-    {
-      cerr << "Failed to open file: " << word_doc_locations_file_name << "\n";
-      return ;
-    }
 
     u32 doc_locations_buffer[save_map_positions_buffer_size];
     u32 doc_visited = 0;

@@ -7,7 +7,7 @@
 #define log_file_name folder "logs_folder/logs"
 #define doc_id_start_point folder "ds_folder/doc_id_start_point"
 #define doc_id_file_name folder "ds_folder/doc_id_file_name"
-#define max_docs_in_mem 200 //think and reason about it
+#define max_docs_in_mem 2 //think and reason about it
 
 //typedefs used by extract_words_from_file
 #define extract_words_from_file_buffer_size 4096
