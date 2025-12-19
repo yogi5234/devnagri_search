@@ -233,7 +233,7 @@ void save_map(unordered_map<string, helper>* word_map)
     u8 locations_buffer[save_map_locations_buffer_size];
     u32 loc_in_buffer = 0 ;
     //u32 temp_vector_len;
-    // this while block takes care of saving document_id : no of occurances
+    // this while block takes care of saving document_id : starting position
     while(docs_preprocessed != total_docs)
     {
       memcpy((locations_buffer + (save_map_locations_buffer_struct_size * docs_preprocessed)),&h.doc_ids[docs_preprocessed],doc_id_size); // copying doc_id;
