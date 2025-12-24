@@ -18,11 +18,6 @@
 				  - }
 				2. doc_id_file_name : keeps file names one follwed by another
 
-      - header_folder : folder for header files
-        files
-        1. make_index_params.h : arguemnts to give to make_index.cpp 
-        2. my_typedefs.h : just some typedefs to make life easy
-        3. print_word_map.h : contains a function to print the in memory map used in make_index.cpp
 			
       -	ids_folder : for each word contains a file named word + "_ids" which holds following info
         - structure (12 bytes)
@@ -40,3 +35,14 @@
       logs : contains logs of make_index.cpp
 
       - txt_folder : contains txt files used for making index  
+  
+  search.cpp 
+    - takes vector of words and threshold and gives doucments having at least threshold number of words
+
+  header_folder : folder for header files
+    files
+    1. make_index_params.h : arguemnts to give to make_index.cpp 
+    2.  search_params.h : arguemnts to give to search.cpp
+    3. common_params.h : arguemnts used by both make_index.cpp ans search.cpp
+    4. my_typedefs.h : just some typedefs to make life easy
+    5. print_word_map.h : contains a function to print the in memory map used in make_index.cpp
