@@ -20,7 +20,7 @@
 
       - header_folder : folder for header files
         files
-        1. params.h : arguemnts to give to make_index.cpp 
+        1. make_index_params.h : arguemnts to give to make_index.cpp 
         2. my_typedefs.h : just some typedefs to make life easy
         3. print_word_map.h : contains a function to print the in memory map used in make_index.cpp
 			

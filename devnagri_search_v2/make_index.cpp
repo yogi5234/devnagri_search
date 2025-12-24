@@ -15,11 +15,11 @@
 #include <map>
 
 #define header_folder "header_folder/"
-#define params_file header_folder "parmas.h"
+#define params_file header_folder "make_index_parmas.h"
 #define my_typedefs header_folder "my_typedefs.h" 
 #define print_word_map_file header_folder "print_word_map.h"
 #include "header_folder/my_typedefs.h"
-#include "header_folder/params.h" // use this file for giving all parameters
+#include "header_folder/make_index_params.h" // use this file for giving all parameters
 
 using namespace std;
 namespace fs = filesystem;
@@ -206,14 +206,14 @@ void save_map(unordered_map<string, helper>* word_map)
   while(it != word_map->end())
   {
     string word = it->first;
-    string word_doc_id_file_name = string(save_map_locations_ids_folder) + word + "_ids";
+    string word_doc_id_file_name = string(ids_folder) + word + "_ids";
     FILE *fp = fopen(word_doc_id_file_name.c_str(),"a");
     if (fp == NULL)
     {
       cerr << "Failed to open file: " << word_doc_id_file_name << "\n";
       return ;
     }
-    string word_doc_locations_file_name = string(save_map_locations_positions_folder) + word + "_positions";
+    string word_doc_locations_file_name = string(positions_folder) + word + "_positions";
     FILE *fp_1 = fopen(word_doc_locations_file_name.c_str(),"a");
     if (fp_1 == NULL)
     {
