@@ -5,3 +5,6 @@ devnagri_search_v2/logs_folder/*
 devnagri_search_v2/*.out
 devnagri_search_v2/*.swp
 devnagri_search_v2/*.txt
+devnagri_search_v2/txt_folder/*
+devnagri_search_v2/make_index
+devnagri_search_v2/search

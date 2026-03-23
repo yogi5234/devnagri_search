@@ -36,7 +36,6 @@ vector<u64> get_docs(const vector<string> &words,u16 threshold)
     if(words_processed > (total_words - threshold + 1))
     {
       remove_docs(docs_map,(u16)(words_processed - (total_words - threshold)));
-      cout << "here 2" << endl;
     }
   }
   // getting vector of documents 
@@ -67,13 +66,10 @@ void add_word_docs(unordered_map<u64,u16> &docs_map,const string &word)
     {
       members_preprocessed = 0; 
       members_read = fread(docs_buffer,get_docs_buffer_struct_size,get_docs_buffer_members,fp); 
-      cout << "members_read = " << members_read << endl;
       //members_read /= get_docs_buffer_struct_size;
-      //cout << "members_read = " << members_read << endl;
       while(members_preprocessed != members_read) 
       {
         docs_map[(*(u64 *)&docs_buffer[(members_preprocessed * get_docs_buffer_struct_size)])] += 1;
-        cout << "doc_id = " << (*(u64 *)&docs_buffer[(members_preprocessed * get_docs_buffer_struct_size)]) << endl;
         members_preprocessed += 1;
       }
     }
@@ -83,7 +79,6 @@ void add_word_docs(unordered_map<u64,u16> &docs_map,const string &word)
 
 void remove_docs(unordered_map<u64,u16> &docs_map,u16 threshold)
 {
-      cout << "here 1" << endl;
   unordered_map<u64,u16>::iterator itr = docs_map.begin();
   while(itr != docs_map.end())
   {
@@ -101,7 +96,7 @@ void remove_docs(unordered_map<u64,u16> &docs_map,u16 threshold)
 
 int main()
 {
-  std::vector<u64> result = get_docs(std::vector<std::string>{"Hii", "hello","how"}, 2);
+  std::vector<u64> result = get_docs(std::vector<std::string>{"mules", "seemed" , "aroused","sight","pillar","atomity"}, 6);
   cout << "Here main" << endl;
   int itr = 0;
   while(itr != result.size())

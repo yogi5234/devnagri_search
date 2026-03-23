@@ -2,7 +2,7 @@
 #define doc_id_size 8 // in bytes
 #define doc_vector_max_len_bytes 4 // in bytes
 #define BUFFER_SIZE 4096
-#define max_docs_in_mem 2 //think and reason about it
+#define max_docs_in_mem 200 //think and reason about it
 
 //typedefs used by extract_words_from_file
 #define extract_words_from_file_buffer_size 4096
